@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { createClient } from "@supabase/supabase-js";
+import { query } from "@/lib/db";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://wafflecastle.in";
 
@@ -62,30 +62,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const supabaseUrl =
-      process.env.NEXT_PUBLIC_SUPABASE_URL || "https://qoynqznmcaaflmnjpxwx.supabase.co";
-    const supabaseKey =
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-      "sb_publishable_Chhu9OAIE30aFe1lIP112w_q1SZgsC7";
+    const res = await query<{ slug: string; updated_at: string; created_at: string }>(
+      "SELECT slug, updated_at, created_at FROM public.blog_posts WHERE is_published = true;"
+    );
+    const posts = res.rows;
 
-    if (supabaseUrl && supabaseKey) {
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      const { data: posts } = await supabase
-        .from("blog_posts")
-        .select("slug, updated_at, created_at")
-        .eq("is_published", true);
-
-      if (posts && posts.length > 0) {
-        posts.forEach((post) => {
-          routes.push({
-            url: `${BASE_URL}/blog/${post.slug}`,
-            lastModified: post.updated_at ? new Date(post.updated_at) : (post.created_at ? new Date(post.created_at) : new Date()),
-            changeFrequency: "weekly",
-            priority: 0.7,
-          });
+    if (posts && posts.length > 0) {
+      posts.forEach((post) => {
+        routes.push({
+          url: `${BASE_URL}/blog/${post.slug}`,
+          lastModified: post.updated_at ? new Date(post.updated_at) : (post.created_at ? new Date(post.created_at) : new Date()),
+          changeFrequency: "weekly",
+          priority: 0.7,
         });
-      }
+      });
     }
   } catch (error) {
     console.error("Error fetching blog posts for sitemap:", error);

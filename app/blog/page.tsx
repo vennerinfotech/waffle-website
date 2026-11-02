@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Clock, ArrowRight, BookOpen } from "lucide-react";
 import Footer from "../components/Footer";
 import { blogPosts, BlogPost } from "./data";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/db/client";
 import "./blog.css";
 
 export default function BlogPage() {

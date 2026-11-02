@@ -11,7 +11,7 @@ import {
   Heart,
 } from "lucide-react";
 import Footer from "../components/Footer";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/db/client";
 import "./royal-products.css";
 
 const categories = [

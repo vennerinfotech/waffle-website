@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 import "./events.css";
 import { motion } from "framer-motion";
 import { Camera, Heart, Music, Moon, Star, CalendarDays } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/db/client";
 
 interface PastEvent {
   id?: string;

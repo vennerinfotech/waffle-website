@@ -19,7 +19,7 @@ import {
 } from "react-icons/fa6";
 import Footer from "../../components/Footer";
 import { blogPosts, BlogPost } from "../data";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/db/client";
 import "../blog.css";
 
 interface PageProps {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/db/client";
 import { Plus, Pencil, Trash2, X, BookOpen, UploadCloud, Link2 } from "lucide-react";
 
 interface BlogPost {

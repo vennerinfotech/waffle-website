@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { MapPin, Navigation, ShoppingBag } from "lucide-react";
 import Footer from "../components/Footer";
 import "./locator.css";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/db/client";
 import fallbackStores from "./fallback_stores.json";
 
 export default function CastleLocator() {

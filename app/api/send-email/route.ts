@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { createClient } from "@supabase/supabase-js";
+import { query } from "@/lib/db";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -213,61 +213,37 @@ export async function POST(request: Request) {
         return Response.json({ error: "Unknown formType" }, { status: 400 });
     }
 
-    // ─── Save to Supabase (blocking/awaited) ────────────────────────
+    // ─── Save to PostgreSQL ──────────────────────────────────────
     let dbSuccess = false;
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://qoynqznmcaaflmnjpxwx.supabase.co";
-    
-    // Choose the best key available (service role key if configured and valid, otherwise public/anon key)
-    const isServiceKeyValid = process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.SUPABASE_SERVICE_ROLE_KEY !== "your-service-role-key-here";
-    const supabaseKey = isServiceKeyValid
-      ? process.env.SUPABASE_SERVICE_ROLE_KEY
-      : (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_Chhu9OAIE30aFe1lIP112w_q1SZgsC7");
-
-    if (supabaseUrl && supabaseKey) {
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      try {
-        if (payload.formType === "contact") {
-          const { error } = await supabase.from("contact_leads").insert([
-            {
-              name: payload.name,
-              email: payload.email,
-              phone: payload.phone,
-              message: payload.message,
-              status: "New",
-            },
-          ]);
-          if (error) throw error;
-        } else if (payload.formType === "franchise") {
-          const { error } = await supabase.from("franchise_leads").insert([
-            {
-              first_name: payload.firstName,
-              last_name: payload.lastName,
-              email: payload.email,
-              contact_no: payload.contactNo,
-              city: payload.city,
-              state: payload.state,
-              plan_to_start: payload.planToStart,
-              status: "New",
-            },
-          ]);
-          if (error) throw error;
-        } else if (payload.formType === "events") {
-          const { error } = await supabase.from("event_bookings").insert([
-            {
-              name: payload.name,
-              phone: payload.phone,
-              email: payload.email,
-              event_type: payload.eventType,
-              message: payload.message,
-              status: "Pending",
-            },
-          ]);
-          if (error) throw error;
-        }
-        dbSuccess = true;
-      } catch (dbErr) {
-        console.error("[send-email] Supabase insert failed:", dbErr);
+    try {
+      if (payload.formType === "contact") {
+        await query(
+          `INSERT INTO public.contact_leads (name, email, phone, message, status) VALUES ($1, $2, $3, $4, $5);`,
+          [payload.name, payload.email, payload.phone || "", payload.message || "", "New"]
+        );
+      } else if (payload.formType === "franchise") {
+        await query(
+          `INSERT INTO public.franchise_leads (first_name, last_name, email, contact_no, city, state, plan_to_start, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
+          [
+            payload.firstName,
+            payload.lastName,
+            payload.email,
+            payload.contactNo,
+            payload.city,
+            payload.state,
+            payload.planToStart || "",
+            "New",
+          ]
+        );
+      } else if (payload.formType === "events") {
+        await query(
+          `INSERT INTO public.event_bookings (name, phone, email, event_type, message, status) VALUES ($1, $2, $3, $4, $5, $6);`,
+          [payload.name, payload.phone, payload.email, payload.eventType || "Table Reservation", payload.message || "", "Pending"]
+        );
       }
+      dbSuccess = true;
+    } catch (dbErr) {
+      console.error("[send-email] PostgreSQL insert failed:", dbErr);
     }
 
     // ─── Send Email ───────────────────────────────────────────────

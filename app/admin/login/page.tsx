@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/db/client";
 import { useRouter } from "next/navigation";
 import { Crown, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
